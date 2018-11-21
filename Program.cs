@@ -87,6 +87,10 @@ namespace Fallout76Proxy
             Console.WriteLine("Waiting for Fallout 76 closed.");
 
             process.WaitForExit();
+
+            Console.WriteLine("Closing Bethesda launcher.");
+            foreach (Process bethesdaLauncher in Process.GetProcessesByName("BethesdaNetLauncher"))
+                bethesdaLauncher.Kill();
         }
 
         static void Main(string[] args)
