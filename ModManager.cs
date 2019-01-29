@@ -74,7 +74,7 @@ namespace Fallout76Proxy
 
             string[] ba2Archives = Directory.GetFiles($"{GetFallout76Path()}\\Data\\", "*.ba2");
 
-            Console.WriteLine($"Detected {ba2Archives.Length} mods.");
+            int modsCount = 0;
 
             foreach (string ba2Archive in ba2Archives)
             {
@@ -83,6 +83,8 @@ namespace Fallout76Proxy
                 {
                     continue;
                 }
+
+                modsCount += 1;
 
                 BA2 ba2 = new BA2(ba2Archive);
 
@@ -110,6 +112,8 @@ namespace Fallout76Proxy
             }
 
             WriteFallout76Customs(sResourceArchive2List, sResourceStartUpArchiveList);
+
+            Console.WriteLine($"Enabled {modsCount} mods.");
         }
 
         void WriteFallout76Customs(string sResourceArchive2List, string sResourceStartUpArchiveList)
