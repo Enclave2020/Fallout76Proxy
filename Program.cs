@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Management;
 
@@ -12,6 +13,13 @@ namespace Fallout76Proxy
 
     class Program
     {
+        enum ModEnablerState
+        {
+            None,
+            Disabled,
+            Enabled
+        }
+
         static string GetCommandLine(string ProcessName)
         {
             ManagementClass mngmtClass = new ManagementClass("Win32_Process");
@@ -32,8 +40,63 @@ namespace Fallout76Proxy
             return fallouts76.Count() > 0;
         }
 
+        static ModEnablerState GetModEnablerState()
+        {
+            if (!File.Exists("mods.txt"))
+            {
+                return ModEnablerState.None;
+            }
+
+            string content = File.ReadAllText("mods.txt");
+
+            ModEnablerState modEnablerState = (ModEnablerState) Enum.Parse(typeof(ModEnablerState), content);
+
+            return modEnablerState;
+        }
+
+        static void SetModEnablerState(ModEnablerState modEnablerState)
+        {
+            string content = modEnablerState.ToString();
+
+            File.WriteAllText("mods.txt", content);
+        }
+
+        static void ModsManagerProcess()
+        {
+            if (GetModEnablerState() == ModEnablerState.None)
+            {
+                Console.WriteLine("Would you like to try mods enabler?");
+                Console.WriteLine("It will be add all BA2 mods from game folder to Fallout76Custom at each start.");
+                Console.WriteLine("Also it detecting mods conflicts.");
+                Console.WriteLine("\nWrite Y to enable this feature or anything else to skip.");
+                Console.WriteLine("You can change it anytime by removing mods.txt near this exe.");
+
+                ConsoleKeyInfo userChoose = Console.ReadKey();
+                Console.WriteLine();
+
+                if (userChoose.Key == ConsoleKey.Y)
+                {
+                    SetModEnablerState(ModEnablerState.Enabled);
+                }
+                else
+                {
+                    SetModEnablerState(ModEnablerState.Disabled);
+                }
+            }
+
+            if (GetModEnablerState() == ModEnablerState.Enabled)
+            {
+                ModManager modManager = new ModManager();
+                modManager.Process();
+            }
+        }
+
         static void Launch()
         {
+            Console.Title = "Fallout76 Steam overlay";
+
+            ModsManagerProcess();
+
             if (!BethesdaLauncher.Installed())
                 throw new BethesdaLauncherMissedException("Try to reinstall bethesda launcher.");
 
